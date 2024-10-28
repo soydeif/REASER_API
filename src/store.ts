@@ -1,39 +1,62 @@
-import { Store, StoreItem } from "./types";
+import { StoreItem } from "./types";
+import { dbPromise } from "./database";
 
 class StoreController {
-  private store: Store = { items: [] };
-  private idCounter: number = 0;
-
-  addItem(url: string, category: string): StoreItem {
-    const newItem: StoreItem = { id: this.idCounter++, url, category };
-    this.store.items.push(newItem);
-    return newItem;
-  }
-
-  updateItem(id: number, url: string, category: string): StoreItem | null {
-    const item = this.store.items.find((item) => item.id === id);
-    if (item) {
-      item.url = url;
-      item.category = category;
+  async addItem(url: string, category: string): Promise<StoreItem> {
+    const db = await dbPromise;
+    try {
+      const result = await db.run(
+        "INSERT INTO feeds (url, category) VALUES (?, ?)",
+        [url, category]
+      );
+      if (result.lastID === undefined) {
+        throw new Error("Failed to insert new item");
+      }
+      return { id: result.lastID, url, category };
+    } catch (error) {
+      console.error("Error in addItem:", error);
+      throw error;
     }
-    return item || null;
   }
 
-  deleteItem(id: number): boolean {
-    const index = this.store.items.findIndex((item) => item.id === id);
-    if (index !== -1) {
-      this.store.items.splice(index, 1);
-      return true;
+  async updateItem(
+    id: number,
+    url: string,
+    category: string
+  ): Promise<StoreItem | null> {
+    const db = await dbPromise;
+    const result = await db.run(
+      "UPDATE feeds SET url = ?, category = ? WHERE id = ?",
+      [url, category, id]
+    );
+    if (result.changes === undefined) {
+      throw new Error("Failed to update item");
     }
-    return false;
+    return result.changes > 0 ? { id, url, category } : null;
   }
 
-  getAllItems(): StoreItem[] {
-    return this.store.items;
+  async deleteItem(id: number): Promise<boolean> {
+    const db = await dbPromise;
+    try {
+      const result = await db.run("DELETE FROM feeds WHERE id = ?", id);
+      if (result.changes === undefined) {
+        throw new Error("Failed to delete item");
+      }
+      return result.changes > 0;
+    } catch (error) {
+      console.error("Error in deleteItem:", error);
+      throw error;
+    }
   }
 
-  filterItemsByCategory(category: string): StoreItem[] {
-    return this.store.items.filter((item) => item.category === category);
+  async getAllItems(): Promise<StoreItem[]> {
+    const db = await dbPromise;
+    return await db.all("SELECT * FROM feeds");
+  }
+
+  async filterItemsByCategory(category: string): Promise<StoreItem[]> {
+    const db = await dbPromise;
+    return await db.all("SELECT * FROM feeds WHERE category = ?", category);
   }
 }
 
