@@ -12,22 +12,23 @@ const PORT = process.env.PORT || 3000;
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000,
   max: 20,
-  message: "Too many request. Try again later.",
+  message: "Too many requests. Try again later.",
 });
-
 app.use(express.json());
-
 // app.use("/api", apiKeyMiddleware);
-
 app.use("/api", limiter);
 app.use("/api", router);
 
 initializeDatabase()
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
+    if (process.env.NODE_ENV !== "test") {
+      app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+      });
+    }
   })
   .catch((err: any) => {
     console.error("Failed to initialize database:", err);
   });
+
+export default app;
