@@ -18,8 +18,8 @@ ES : Esta es una API sencilla para gestionar feeds RSS. Permite crear, leer, act
 |--------|----------------------|------------------------------------------|-----------------------------------------|
 | POST   | `/api/addfeed`      | Add a new feed to the collection.       | Agregar un nuevo feed a la colección.  |
 | GET    | `/api/myfeeds`      | Retrieve all feeds from the collection. | Obtener todos los feeds de la colección.|
-| PUT    | `/api/myfeeds/:id`  | Update an existing feed by ID.          | Actualizar un feed existente por ID.   |
-| DELETE | `/api/myfeeds/:id`  | Delete a feed by ID.                    | Eliminar un feed por ID.               |
+| PUT    | `/api/updatefeed/:id`  | Update an existing feed by ID.          | Actualizar un feed existente por ID.   |
+| DELETE | `/api/deletefeed/:id`  | Delete a feed by ID.                    | Eliminar un feed por ID.               |
 | GET    | `/api/myfeeds/filter`| Filter feeds by category.               | Filtrar feeds por categoría.           |
 
 ## Technologies Used | Tecnologías Usadas
