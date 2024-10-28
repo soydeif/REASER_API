@@ -3,43 +3,74 @@ import { storeController } from "./store";
 
 const router = express.Router();
 
-router.post("/addfeed", (req, res) => {
+router.post("/addfeed", async (req, res) => {
   const { url, category } = req.body;
-  const newItem = storeController.addItem(url, category);
-  res.status(201).json(newItem);
-});
-
-router.get("/myfeeds", (req, res) => {
-  const items = storeController.getAllItems();
-  res.json(items);
-});
-
-router.put("/updatefeed/:id", (req, res) => {
-  const { id } = req.params;
-  const { url, category } = req.body;
-  const updatedItem = storeController.updateItem(Number(id), url, category);
-  if (updatedItem) {
-    res.json(updatedItem);
-  } else {
-    res.status(404).json({ error: "Item not found" });
+  try {
+    const newItem = await storeController.addItem(url, category);
+    res.status(201).json(newItem);
+  } catch (error) {
+    console.error("Error in addfeed:", error);
+    res.status(500).json({ error: "Error adding item" });
   }
 });
 
-router.delete("/deletefeed/:id", (req, res) => {
-  const { id } = req.params;
-  const success = storeController.deleteItem(Number(id));
-  if (success) {
-    res.sendStatus(204);
-  } else {
-    res.status(404).json({ error: "Item not found" });
+router.get("/myfeeds", async (req, res) => {
+  try {
+    const items = await storeController.getAllItems();
+    res.json(items);
+  } catch (error) {
+    console.error("Error in myfeeds:", error);
+    res.status(500).json({ error: "Error fetching items" });
   }
 });
 
-router.get("/myfeeds/filter", (req, res) => {
+router.put("/updatefeed/:id", async (req, res) => {
+  const { id } = req.params;
+  const { url, category } = req.body;
+  try {
+    const updatedItem = await storeController.updateItem(
+      Number(id),
+      url,
+      category
+    );
+    if (updatedItem) {
+      res.json(updatedItem);
+    } else {
+      res.status(404).json({ error: "Item not found" });
+    }
+  } catch (error) {
+    console.error("Error in updatefeed:", error);
+    res.status(500).json({ error: "Error updating item" });
+  }
+});
+
+router.delete("/deletefeed/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const success = await storeController.deleteItem(Number(id));
+    if (success) {
+      res.sendStatus(204);
+    } else {
+      res.status(404).json({ error: "Item not found" });
+    }
+  } catch (error) {
+    console.error("Error in deletefeed:", error);
+    res.status(500).json({ error: "Error deleting item" });
+  }
+});
+
+router.get("/myfeeds/filter", async (req, res) => {
   const { category } = req.query;
   if (typeof category === "string") {
-    const filteredItems = storeController.filterItemsByCategory(category);
-    res.json(filteredItems);
+    try {
+      const filteredItems = await storeController.filterItemsByCategory(
+        category
+      );
+      res.json(filteredItems);
+    } catch (error) {
+      console.error("Error in filter items:", error);
+      res.status(500).json({ error: "Error filtering items" });
+    }
   } else {
     res.status(400).json({ error: "Invalid category parameter" });
   }
