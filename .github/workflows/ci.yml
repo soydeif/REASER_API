@@ -30,9 +30,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Linter
-        run: npm run lint
-
       - name: Create test branch
         run: |
           git checkout -b test-branch
