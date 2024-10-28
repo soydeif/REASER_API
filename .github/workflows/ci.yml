@@ -8,7 +8,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: "0 0 * * 0"
+    - cron: "0 15 * * *"
 
 jobs:
   build-and-test:
@@ -33,5 +33,19 @@ jobs:
       - name: Run Linter
         run: npm run lint
 
+      - name: Create test branch
+        run: |
+          git checkout -b test-branch
+
       - name: Run Tests
         run: npm test
+
+      - name: Merge test branch to main
+        run: |
+          git checkout main
+          git merge test-branch
+          git push origin main
+
+      - name: Delete test branch
+        run: |
+          git branch -D test-branch
