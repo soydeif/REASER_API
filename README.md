@@ -1,6 +1,9 @@
-# REASER_API_Feeds
-EN : This is a simple API for managing RSS feeds. It allows you to create, read, update, delete, and filter feeds by their category.
+# REASER_API_Feeds  
+
+EN : This is a simple API for managing RSS feeds. It allows you to create, read, update, delete, and filter feeds by their category.  
+
 ES : Esta es una API sencilla para gestionar feeds RSS. Permite crear, leer, actualizar, eliminar y filtrar feeds según su categoría.
+
 
 
 ## Features | Funcionalidades
