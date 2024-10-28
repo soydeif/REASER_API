@@ -21,3 +21,6 @@ database.db
 # Operating system files
 .DS_Store
 Thumbs.db
+
+# Ignore internal scripts
+seederFeeds.js

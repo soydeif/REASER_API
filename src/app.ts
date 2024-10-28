@@ -2,16 +2,24 @@ import express from "express";
 import router from "./routes";
 import { initializeDatabase } from "./database";
 import dotenv from "dotenv";
-import { apiKeyMiddleware } from "./middleware";
+import rateLimit from "express-rate-limit";
 
-// Cargar variables de entorno
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 20,
+  message: "Demasiadas solicitudes, por favor intenta de nuevo más tarde.",
+});
+
 app.use(express.json());
-app.use("/api", apiKeyMiddleware);
+
+// app.use("/api", apiKeyMiddleware);
+
+app.use("/api", limiter);
 app.use("/api", router);
 
 initializeDatabase()
