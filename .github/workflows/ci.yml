@@ -1,14 +1,9 @@
 name: REASER CI
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
-  schedule:
-    - cron: "14 15 * * *"
 
 jobs:
   build-and-test:
@@ -30,21 +25,5 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Create test branch
-        run: |
-          git checkout -b test-branch
-
       - name: Run Tests
         run: npm test
-
-      - name: Merge test branch to main
-        run: |
-          git checkout main
-          git merge test-branch
-          git push origin main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Delete test branch
-        run: |
-          git branch -D test-branch
