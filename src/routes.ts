@@ -3,30 +3,27 @@ import { storeController } from "./store";
 
 const router = express.Router();
 
-// Endpoint para agregar un nuevo feed
 router.post("/addfeed", async (req, res) => {
   const { url, category } = req.body;
   try {
     const newItem = await storeController.addItem(url, category);
     res.status(201).json(newItem);
   } catch (error) {
-    console.error("Error in addfeed:", error); // Manejo de errores
+    console.error("Error in addfeed:", error);
     res.status(500).json({ error: "Error adding item" });
   }
 });
 
-// Endpoint para obtener todos los feeds
 router.get("/myfeeds", async (req, res) => {
   try {
     const items = await storeController.getAllItems();
     res.json(items);
   } catch (error) {
-    console.error("Error in myfeeds:", error); // Manejo de errores
+    console.error("Error in myfeeds:", error);
     res.status(500).json({ error: "Error fetching items" });
   }
 });
 
-// Endpoint para actualizar un feed existente
 router.put("/updatefeed/:id", async (req, res) => {
   const { id } = req.params;
   const { url, category } = req.body;
@@ -42,12 +39,11 @@ router.put("/updatefeed/:id", async (req, res) => {
       res.status(404).json({ error: "Item not found" });
     }
   } catch (error) {
-    console.error("Error in updatefeed:", error); // Manejo de errores
+    console.error("Error in updatefeed:", error);
     res.status(500).json({ error: "Error updating item" });
   }
 });
 
-// Endpoint para eliminar un feed
 router.delete("/deletefeed/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -58,12 +54,11 @@ router.delete("/deletefeed/:id", async (req, res) => {
       res.status(404).json({ error: "Item not found" });
     }
   } catch (error) {
-    console.error("Error in deletefeed:", error); // Manejo de errores
+    console.error("Error in deletefeed:", error);
     res.status(500).json({ error: "Error deleting item" });
   }
 });
 
-// Endpoint para filtrar feeds por categoría
 router.get("/myfeeds/filter", async (req, res) => {
   const { category } = req.query;
   if (typeof category === "string") {
@@ -73,7 +68,7 @@ router.get("/myfeeds/filter", async (req, res) => {
       );
       res.json(filteredItems);
     } catch (error) {
-      console.error("Error in filter items:", error); // Manejo de errores
+      console.error("Error in filter items:", error);
       res.status(500).json({ error: "Error filtering items" });
     }
   } else {
