@@ -1,29 +1,31 @@
 # REASER_API_Feeds
+EN : This is a simple API for managing RSS feeds. It allows you to create, read, update, delete, and filter feeds by their category.
+ES : Esta es una API sencilla para gestionar feeds RSS. Permite crear, leer, actualizar, eliminar y filtrar feeds según su categoría.
 
-Esta es una API sencilla para gestionar feeds RSS. Permite crear, leer, actualizar, eliminar y filtrar feeds según su categoría.
 
-## Funcionalidades
+## Features | Funcionalidades
 
-- **Agregar un nuevo feed**
-- **Obtener todos los feeds**
-- **Actualizar un feed existente**
-- **Eliminar un feed**
-- **Filtrar feeds por categoría**
+- **Add a new feed | Agregar un nuevo feed**
+- **Get all feeds | Obtener todos los feeds**
+- **Update an existing feed | Actualizar un feed existente**
+- **Delete a feed | Eliminar un feed**
+- **Filter feeds by category | Filtrar feeds por categoría**
 
-## Tecnologías Usadas
 
-- [Node.js](https://nodejs.org/) - Entorno de ejecución para JavaScript
-- [Express](https://expressjs.com/) - Framework para construir aplicaciones web
-- [TypeScript](https://www.typescriptlang.org/) - Lenguaje de programación que es un superconjunto de JavaScript
+## Technologies Used| Tecnologías Usadas
 
-## Instalación
+- [Node.js](https://nodejs.org/) - 
+- [Express](https://expressjs.com/) - 
+- [TypeScript](https://www.typescriptlang.org/) -
 
-### Prerequisitos
+## Installation | Instalación
 
-- Tener instalado [Node.js](https://nodejs.org/) (recomendado la última versión LTS).
-- Tener instalado [npm](https://www.npmjs.com/) (gestor de paquetes para Node.js).
+### Prerequisites | Prerequisitos
 
-### Clonar el repositorio
+-  [Node.js](https://nodejs.org/)
+-  [npm](https://www.npmjs.com/) 
+
+### Clone the repository | Clonar el repositorio
 
 ```bash
 git clone https://github.com/soydeif/REASER_API.git
