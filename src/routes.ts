@@ -44,6 +44,32 @@ router.put("/updatefeed/:id", async (req, res) => {
   }
 });
 
+router.patch(
+  "/updatefeed/:feedId/contentgroup/:itemId/favorite",
+  async (req, res) => {
+    const { feedId, itemId } = req.params;
+    const { favorite } = req.body;
+    const isFavorite = favorite === 1;
+
+    try {
+      const updatedFeed = await storeController.updateFavoriteStatus(
+        Number(feedId),
+        Number(itemId),
+        isFavorite
+      );
+
+      if (updatedFeed) {
+        res.json(updatedFeed);
+      } else {
+        res.status(404).json({ error: "Item or feed not found" });
+      }
+    } catch (error) {
+      console.error("Error updating favorite status:", error);
+      res.status(500).json({ error: "Error updating favorite status" });
+    }
+  }
+);
+
 router.delete("/deletefeed/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -73,6 +99,16 @@ router.get("/myfeeds/filter", async (req, res) => {
     }
   } else {
     res.status(400).json({ error: "Invalid category parameter" });
+  }
+});
+
+router.get("/myfeeds/favorites", async (req, res) => {
+  try {
+    const favoriteItems = await storeController.getFavoriteItems();
+    res.json(favoriteItems);
+  } catch (error) {
+    console.error("Error retrieving favorite items:", error);
+    res.status(500).json({ error: "Error retrieving favorite items" });
   }
 });
 
