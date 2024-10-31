@@ -2,6 +2,7 @@ import request from "supertest";
 import app from "../src/app";
 import { dbPromise, initializeDatabase } from "../src/database";
 import nock from "nock";
+import fs from "fs/promises";
 
 describe("API Endpoints", () => {
   let feedId;
@@ -10,15 +11,15 @@ describe("API Endpoints", () => {
     const db = await dbPromise;
     await initializeDatabase();
 
-    // Mock para la API externa
+    const documentStructure = await fs.readFile(
+      "test/testStructure.xml",
+      "utf-8"
+    );
+
     nock("https://www.theverge.com")
       .get("/rss/index.xml")
-      .reply(
-        200,
-        "<rss><channel><item><title>Sample Item</title></item></channel></rss>"
-      );
+      .reply(200, documentStructure);
 
-    // Limpiar las tablas antes de las pruebas
     await clearDatabase(db);
   });
 
@@ -122,7 +123,7 @@ describe("API Endpoints", () => {
 
   it("should filter feeds by category", async () => {
     await createFeed();
-    await createFeed("https://anotherexample.com/rss", "sports");
+    await createFeed("https://www.theverge.com/rss/index.xml", "sports");
 
     const res = await request(app).get("/api/myfeeds/filter?category=news");
 

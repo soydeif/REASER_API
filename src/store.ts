@@ -17,11 +17,16 @@ class StoreController {
       } else if (result.feed) {
         return this.parseAtomFeed(result);
       } else {
-        throw new Error("Formato de feed no soportado.");
+        throw new Error("Unsupported feed format.");
       }
     } catch (error) {
-      console.error("Error al parsear el feed:", error);
-      throw new Error("No se pudo obtener o parsear el feed.");
+      console.error("Error parsing the feed from URL:", url);
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error details:", error.message);
+      } else {
+        console.error("General error details:", error);
+      }
+      throw new Error("Failed to fetch or parse the feed.");
     }
   }
 
@@ -39,6 +44,7 @@ class StoreController {
       : [];
 
     const items = itemsArray.map((item: any) => {
+      console.log("Processing item:", item);
       return {
         id: item.id || null,
         title: item.title || "No Title",
@@ -64,7 +70,7 @@ class StoreController {
 
   private parseAtomFeed(result: any): { title: string; items: any[] } {
     const feedTitle = result.feed.title;
-    const items = result.feed.entry.map((entry: any, index: number) => {
+    const items = result.feed.entry.map((entry: any) => {
       return {
         title: entry.title,
         link: entry.link.$.href,
@@ -76,19 +82,37 @@ class StoreController {
           this.extractFirstParagraphContent(entry.content || entry.summary) ||
           "",
         imageSource: this.extractImageSource(entry.content || entry.summary),
-        author: entry.author ? entry.author.name : "",
+        author: entry.author ? entry.author.name : "Unknown Author",
         publishedAt: entry.published || "",
       };
     });
     return { title: feedTitle, items };
   }
+
   private extractContentString(content: any): string | null {
-    if (
-      typeof content === "object" &&
-      content !== null &&
-      typeof content._ === "string"
-    ) {
-      return content._;
+    if (content === undefined) {
+      console.error("Content es undefined");
+      return null;
+    }
+
+    if (typeof content === "object" && content !== null) {
+      if (content._ && typeof content._ === "string") {
+        return content._;
+      }
+
+      let textContent = "";
+
+      if (Array.isArray(content.p)) {
+        textContent += content.p.map((p: any) => p._ || "").join(" ");
+      } else if (content.p && typeof content.p === "object") {
+        textContent += content.p._ || "";
+      }
+
+      if (content.figcaption) {
+        textContent += content.figcaption;
+      }
+
+      return textContent.trim() || null;
     } else if (typeof content === "string") {
       return content;
     } else {
