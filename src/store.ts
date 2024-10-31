@@ -1,6 +1,5 @@
 import { StoreItem } from "./types";
 import { dbPromise } from "./database";
-import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import xml2js from "xml2js";
 
@@ -27,11 +26,22 @@ class StoreController {
   }
 
   private parseRSSFeed(result: any): { title: string; items: any[] } {
-    const feedTitle = result.rss.channel.title;
-    const items = result.rss.channel.item.map((item: any) => {
+    if (!result.rss || !result.rss.channel) {
+      throw new Error("Invalid RSS structure: missing channel or RSS");
+    }
+
+    const feedTitle = result.rss.channel.title || "Untitled Feed";
+
+    const itemsArray = Array.isArray(result.rss.channel.item)
+      ? result.rss.channel.item
+      : result.rss.channel.item
+      ? [result.rss.channel.item]
+      : [];
+
+    const items = itemsArray.map((item: any) => {
       return {
-        id: item.id,
-        title: item.title,
+        id: item.id || null,
+        title: item.title || "No Title",
         description:
           this.extractFigcaptionEmContent(item.description || item.content) ||
           item.description ||
@@ -41,13 +51,14 @@ class StoreController {
           this.extractFirstParagraphContent(item.description || item.content) ||
           item["media:description"] ||
           "",
-        link: item.link,
+        link: item.link || "",
         imageSource: this.extractImageSource(item.description || item.content),
-        author: item["media:credit"] || item.author || "",
+        author: item["media:credit"] || item.author || "Unknown Author",
         publishedAt: item.pubDate || "",
         favorite: false,
       };
     });
+
     return { title: feedTitle, items };
   }
 
@@ -71,19 +82,24 @@ class StoreController {
     });
     return { title: feedTitle, items };
   }
-
-  private extractImageSource(content: any): string | null {
-    const contentString =
+  private extractContentString(content: any): string | null {
+    if (
       typeof content === "object" &&
       content !== null &&
       typeof content._ === "string"
-        ? content._
-        : typeof content === "string"
-        ? content
-        : null;
-
-    if (!contentString) {
+    ) {
+      return content._;
+    } else if (typeof content === "string") {
+      return content;
+    } else {
       console.error("Content no es una cadena:", content);
+      return null;
+    }
+  }
+
+  private extractImageSource(content: any): string | null {
+    const contentString = this.extractContentString(content);
+    if (contentString === null) {
       return null;
     }
 
@@ -93,45 +109,25 @@ class StoreController {
   }
 
   private extractFigcaptionEmContent(content: any): string | null {
-    const contentString =
-      typeof content === "object" &&
-      content !== null &&
-      typeof content._ === "string"
-        ? content._
-        : typeof content === "string"
-        ? content
-        : null;
-
-    if (!contentString) {
-      console.error("Content no es una cadena:", content);
+    const contentString = this.extractContentString(content);
+    if (contentString === null) {
       return null;
     }
 
     const figcaptionRegex =
       /<figcaption[^>]*>.*?<em>(.*?)<\/em>.*?<\/figcaption>/;
     const figcaptionMatch = contentString.match(figcaptionRegex);
-
     return figcaptionMatch ? figcaptionMatch[1].trim() : null;
   }
 
   private extractFirstParagraphContent(content: any): string | null {
-    const contentString =
-      typeof content === "object" &&
-      content !== null &&
-      typeof content._ === "string"
-        ? content._
-        : typeof content === "string"
-        ? content
-        : null;
-
-    if (!contentString) {
-      console.error("Content no es una cadena:", content);
+    const contentString = this.extractContentString(content);
+    if (contentString === null) {
       return null;
     }
 
     const paragraphRegex = /<p\b[^>]*>(.*?)<\/p>/;
     const paragraphMatch = contentString.match(paragraphRegex);
-
     return paragraphMatch ? paragraphMatch[1] : null;
   }
 
@@ -149,7 +145,11 @@ class StoreController {
 
       const parsedFeed = await this.parseRSS(url);
 
-      if (!parsedFeed.items.length) {
+      if (
+        !parsedFeed ||
+        !parsedFeed.items ||
+        !Array.isArray(parsedFeed.items)
+      ) {
         throw new Error("No items found in parsed feed");
       }
 
@@ -191,9 +191,14 @@ class StoreController {
         feedTitle: parsedFeed.title,
         contentGroup,
       };
-    } catch (error) {
-      console.error("Error in addItem:", error);
-      throw error;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error al parsear el feed:", error.message);
+        throw new Error("No se pudo obtener o parsear el feed.");
+      } else {
+        console.error("Error inesperado:", error);
+        throw new Error("Error inesperado al procesar el feed.");
+      }
     }
   }
 
