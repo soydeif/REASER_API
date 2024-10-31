@@ -18,4 +18,20 @@ export async function initializeDatabase() {
       category TEXT NOT NULL
     )
   `);
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS feed_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      feed_id INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      link TEXT NOT NULL,
+      description TEXT,
+      content TEXT,
+      imageSource TEXT,
+      author TEXT,
+      publishedAt TEXT,
+      favorite BOOLEAN DEFAULT FALSE,
+      FOREIGN KEY (feed_id) REFERENCES feeds (id) ON DELETE CASCADE
+    )
+  `);
 }
