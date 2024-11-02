@@ -4,9 +4,9 @@ import { storeController } from "./store";
 const router = express.Router();
 
 router.post("/addfeed", async (req, res) => {
-  const { url, category } = req.body;
+  const { url, category, feedTitle } = req.body;
   try {
-    const newItem = await storeController.addItem(url, category);
+    const newItem = await storeController.addItem(url, category, feedTitle);
     res.status(201).json(newItem);
   } catch (error) {
     console.error("Error in addfeed:", error);
@@ -26,12 +26,13 @@ router.get("/myfeeds", async (req, res) => {
 
 router.put("/updatefeed/:id", async (req, res) => {
   const { id } = req.params;
-  const { url, category } = req.body;
+  const { url, category, feedTitle } = req.body;
   try {
     const updatedItem = await storeController.updateItem(
       Number(id),
       url,
-      category
+      category,
+      feedTitle
     );
     if (updatedItem) {
       res.json(updatedItem);

@@ -15,7 +15,8 @@ export async function initializeDatabase() {
     CREATE TABLE IF NOT EXISTS feeds (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       url TEXT NOT NULL,
-      category TEXT NOT NULL
+      category TEXT NOT NULL,
+      feedTitle TEXT NOT NULL
     )
   `);
 

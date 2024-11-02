@@ -44,7 +44,6 @@ class StoreController {
       : [];
 
     const items = itemsArray.map((item: any) => {
-      console.log("Processing item:", item);
       return {
         id: item.id || null,
         title: item.title || "No Title",
@@ -155,12 +154,16 @@ class StoreController {
     return paragraphMatch ? paragraphMatch[1] : null;
   }
 
-  async addItem(url: string, category: string): Promise<StoreItem> {
+  async addItem(
+    url: string,
+    category: string,
+    feedTitle: string
+  ): Promise<StoreItem> {
     const db = await dbPromise;
     try {
       const result = await db.run(
-        "INSERT INTO feeds (url, category) VALUES (?, ?)",
-        [url, category]
+        "INSERT INTO feeds (url, category, feedTitle) VALUES (?, ?, ?)",
+        [url, category, feedTitle]
       );
 
       if (result.lastID === undefined) {
@@ -229,13 +232,14 @@ class StoreController {
   async updateItem(
     id: number,
     url: string,
-    category: string
+    category: string,
+    feedTitle: string
   ): Promise<StoreItem | null> {
     const db = await dbPromise;
     try {
       const result = await db.run(
-        "UPDATE feeds SET url = ?, category = ? WHERE id = ?",
-        [url, category, id]
+        "UPDATE feeds SET url = ?, category = ?, feedTitle = ? WHERE id = ?",
+        [url, category, feedTitle, id]
       );
 
       if (result.changes === undefined || result.changes === 0) {
@@ -320,7 +324,7 @@ class StoreController {
           "SELECT * FROM feed_items WHERE feed_id = ?",
           item.id
         );
-
+        console.log({ item });
         const contentGroup = parsedFeedItems.map((feedItem) => ({
           id: feedItem.id,
           title: feedItem.title,
@@ -337,7 +341,7 @@ class StoreController {
           id: item.id,
           url: item.url,
           category: item.category,
-          feedTitle: item.url,
+          feedTitle: item.feedTitle,
           contentGroup,
         };
       })
