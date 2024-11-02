@@ -19,6 +19,7 @@ app.use(express.json());
 // app.use("/api", apiKeyMiddleware);
 app.use("/api", limiter);
 app.use("/api", router);
+app.set("trust proxy", 1);
 
 initializeDatabase()
   .then(() => {
