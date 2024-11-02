@@ -41,17 +41,22 @@ describe("API Endpoints", () => {
 
   const createFeed = async (
     url = "https://www.theverge.com/rss/index.xml",
-    category = "news"
+    category = "news",
+    feedTitle = "The Verge"
   ) => {
-    const res = await request(app).post("/api/addfeed").send({ url, category });
+    const res = await request(app)
+      .post("/api/addfeed")
+      .send({ url, category, feedTitle });
     return res.body;
   };
 
-  const expectFeedResponse = (res, url, category) => {
+  const expectFeedResponse = (res, url, category, feedTitle) => {
     expect(res.statusCode).toEqual(201);
     expect(res.body).toHaveProperty("url", url);
     if (category) {
       expect(res.body).toHaveProperty("category", category);
+    } else if (feedTitle) {
+      expect(res.body).toHaveProperty("feedTitle", feedTitle);
     }
   };
 
@@ -59,10 +64,16 @@ describe("API Endpoints", () => {
     const feedData = {
       url: "https://www.theverge.com/rss/index.xml",
       category: "news",
+      feedTitle: "The Verge",
     };
     const res = await request(app).post("/api/addfeed").send(feedData);
 
-    expectFeedResponse(res, feedData.url, feedData.category);
+    expectFeedResponse(
+      res,
+      feedData.url,
+      feedData.category,
+      feedData.feedTitle
+    );
     feedId = res.body.id;
   });
 
@@ -82,6 +93,7 @@ describe("API Endpoints", () => {
     const updatedData = {
       url: "https://www.theverge.com/rss/index.xml",
       category: "updated-news",
+      feedTitle: "The VERGE",
     };
     const res = await request(app)
       .put(`/api/updatefeed/${feedId}`)
