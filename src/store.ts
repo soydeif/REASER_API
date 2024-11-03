@@ -1,4 +1,4 @@
-import { StoreItem } from "./types";
+import { ContentGroup, StoreItem } from "./types";
 import { dbPromise } from "./database";
 import axios from "axios";
 import xml2js from "xml2js";
@@ -319,13 +319,13 @@ class StoreController {
     const items = await db.all("SELECT * FROM feeds");
 
     const storeItems: StoreItem[] = await Promise.all(
-      items.map(async (item) => {
+      items.map(async (item: StoreItem) => {
         const parsedFeedItems = await db.all(
           "SELECT * FROM feed_items WHERE feed_id = ?",
           item.id
         );
         console.log({ item });
-        const contentGroup = parsedFeedItems.map((feedItem) => ({
+        const contentGroup = parsedFeedItems.map((feedItem: ContentGroup) => ({
           id: feedItem.id,
           title: feedItem.title,
           link: feedItem.link,
@@ -355,7 +355,7 @@ class StoreController {
     const feeds = await db.all("SELECT * FROM feeds");
 
     const favoriteItems = await Promise.all(
-      feeds.map(async (feed) => {
+      feeds.map(async (feed: StoreItem) => {
         const items = await db.all(
           "SELECT * FROM feed_items WHERE feed_id = ? AND favorite = ?",
           [feed.id, true]
@@ -375,7 +375,7 @@ class StoreController {
     );
 
     const storeItems: StoreItem[] = await Promise.all(
-      items.map(async (item) => {
+      items.map(async (item: StoreItem) => {
         const parsedFeed = await this.parseRSS(item.url);
         return {
           id: item.id,
