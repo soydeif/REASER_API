@@ -52,7 +52,8 @@ export async function initializeDatabase() {
             )
         `);
   } else {
-    await db.query(`
+    const client = await dbPromise;
+    await client.query(`
             CREATE TABLE IF NOT EXISTS feeds (
                 id SERIAL PRIMARY KEY,
                 url TEXT NOT NULL,
@@ -61,7 +62,7 @@ export async function initializeDatabase() {
             )
         `);
 
-    await db.query(`
+    await client.query(`
             CREATE TABLE IF NOT EXISTS feed_items (
                 id SERIAL PRIMARY KEY,
                 feed_id INTEGER NOT NULL,
