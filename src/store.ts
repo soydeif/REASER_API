@@ -315,9 +315,10 @@ class StoreController {
   }
 
   async getAllItems(): Promise<StoreItem[]> {
-    const db = await dbPromise;
+    const db = await dbPromise; // aqui debe estar el problema
+    console.log({ db });
     const items = await db.all("SELECT * FROM feeds");
-
+    console.log({ items });
     const storeItems: StoreItem[] = await Promise.all(
       items.map(async (item: StoreItem) => {
         const parsedFeedItems = await db.all(
@@ -346,7 +347,7 @@ class StoreController {
         };
       })
     );
-
+    console.log({ storeItems });
     return storeItems;
   }
 
