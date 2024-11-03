@@ -1,21 +1,13 @@
 import express from "express";
-import cors from "cors";
 import router from "./routes";
 import { initializeDatabase } from "./database";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
-import { Client } from "pg";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-app.use(
-  cors({
-    origin: ["http://localhost:3000", "http://localhost:5173"],
-  })
-);
 
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000,
@@ -29,8 +21,6 @@ app.use("/api", limiter);
 app.use("/api", router);
 app.set("trust proxy", 1);
 
-let client: Client;
-
 initializeDatabase()
   .then(() => {
     if (process.env.NODE_ENV !== "test") {
@@ -42,12 +32,5 @@ initializeDatabase()
   .catch((err: any) => {
     console.error("Failed to initialize database:", err);
   });
-
-process.on("SIGINT", async () => {
-  if (process.env.NODE_ENV !== "test" && client) {
-    await client.end();
-  }
-  process.exit(0);
-});
 
 export default app;

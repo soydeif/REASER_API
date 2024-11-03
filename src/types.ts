@@ -3,19 +3,15 @@ export interface StoreItem {
   url: string;
   category: string;
   feedTitle: string;
-  contentGroup: ContentGroup[];
+  contentGroup: {
+    content: string;
+    imageSource: string | null;
+    link: string;
+    title: string;
+    description: string;
+  }[];
 }
-export interface ContentGroup {
-  id: string;
-  author: string;
-  content: string;
-  publishedAt: string;
-  favorite: number | boolean;
-  imageSource: string | null;
-  link: string;
-  title: string;
-  description: string;
-}
+
 export interface Store {
   items: StoreItem[];
 }
