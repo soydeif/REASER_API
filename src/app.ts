@@ -3,6 +3,8 @@ import router from "./routes";
 import { initializeDatabase } from "./database";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
+import { Client } from "pg";
+import cors from "cors";
 
 dotenv.config();
 
@@ -15,12 +17,18 @@ const limiter = rateLimit({
   message: "Too many requests. Try again later.",
 });
 app.use(express.json());
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:5173"],
+  })
+);
 
 // app.use("/api", apiKeyMiddleware);
 app.use("/api", limiter);
 app.use("/api", router);
 app.set("trust proxy", 1);
 
+let client: Client;
 initializeDatabase()
   .then(() => {
     if (process.env.NODE_ENV !== "test") {
@@ -33,4 +41,10 @@ initializeDatabase()
     console.error("Failed to initialize database:", err);
   });
 
+process.on("SIGINT", async () => {
+  if (process.env.NODE_ENV !== "test" && client) {
+    await client.end();
+  }
+  process.exit(0);
+});
 export default app;
