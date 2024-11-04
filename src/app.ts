@@ -1,9 +1,13 @@
 import express from "express";
 import router from "./routes";
-import { initializeDatabase } from "./database";
+import {
+  initializeDatabase,
+  initializeTestDatabase,
+  clearTestDatabase,
+  closeDatabaseConnection,
+} from "./database";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
-import { Client } from "pg";
 import cors from "cors";
 
 dotenv.config();
@@ -23,28 +27,32 @@ app.use(
   })
 );
 
-// app.use("/api", apiKeyMiddleware);
 app.use("/api", limiter);
 app.use("/api", router);
 app.set("trust proxy", 1);
 
-let client: Client;
-initializeDatabase()
-  .then(() => {
-    if (process.env.NODE_ENV !== "test") {
+(async () => {
+  try {
+    if (process.env.NODE_ENV === "test") {
+      await initializeTestDatabase();
+    } else {
+      await initializeDatabase();
       app.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
       });
     }
-  })
-  .catch((err: any) => {
+  } catch (err) {
     console.error("Failed to initialize database:", err);
-  });
+  }
+})();
 
 process.on("SIGINT", async () => {
-  if (process.env.NODE_ENV !== "test" && client) {
-    await client.end();
+  if (process.env.NODE_ENV === "test") {
+    await clearTestDatabase();
+  } else {
+    await closeDatabaseConnection();
   }
   process.exit(0);
 });
+
 export default app;
