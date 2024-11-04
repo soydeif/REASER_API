@@ -18,8 +18,13 @@ if (isTest) {
   });
 
   dbPromise = (async () => {
-    await client.connect();
-    return client;
+    try {
+      await client.connect();
+      return client;
+    } catch (error) {
+      console.error("Failed to connect to PostgreSQL:", error);
+      throw error;
+    }
   })();
 }
 

@@ -2,6 +2,7 @@ import { ContentGroup, StoreItem } from "./types";
 import { dbPromise } from "./database";
 import axios from "axios";
 import xml2js from "xml2js";
+import { Client } from "pg";
 
 class StoreController {
   async parseRSS(url: string): Promise<{ title: string; items: any[] }> {
@@ -315,17 +316,36 @@ class StoreController {
   }
 
   async getAllItems(): Promise<StoreItem[]> {
-    const db = await dbPromise; // aqui debe estar el problema
-    console.log({ db });
-    const items = await db.all("SELECT * FROM feeds");
-    console.log({ items });
+    const db = await dbPromise;
+    let items;
+
+    // Obtener los feeds
+    if (db instanceof Client) {
+      const result = await db.query("SELECT * FROM feeds");
+      items = result.rows; // Para PostgreSQL
+    } else {
+      items = await db.all("SELECT * FROM feeds"); // Para SQLite
+    }
+
     const storeItems: StoreItem[] = await Promise.all(
       items.map(async (item: StoreItem) => {
-        const parsedFeedItems = await db.all(
-          "SELECT * FROM feed_items WHERE feed_id = ?",
-          item.id
-        );
+        let parsedFeedItems;
 
+        // Obtener los feed_items según el tipo de base de datos
+        if (db instanceof Client) {
+          const result = await db.query(
+            "SELECT * FROM feed_items WHERE feed_id = $1",
+            [item.id] // Para PostgreSQL, utiliza el formato correcto
+          );
+          parsedFeedItems = result.rows; // Para PostgreSQL
+        } else {
+          parsedFeedItems = await db.all(
+            "SELECT * FROM feed_items WHERE feed_id = ?",
+            item.id // Para SQLite
+          );
+        }
+
+        // Mapeo de los items de feed_items
         const contentGroup = parsedFeedItems.map((feedItem: ContentGroup) => ({
           id: feedItem.id,
           title: feedItem.title,
@@ -347,7 +367,7 @@ class StoreController {
         };
       })
     );
-    console.log({ storeItems });
+
     return storeItems;
   }
 
