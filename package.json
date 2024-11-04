@@ -6,6 +6,8 @@
   "scripts": {
     "test": "jest",
     "dev": "ts-node-dev src/app.ts",
+    "build": "npm install typescript && npm install pg && npx tsc",
+    "start": "node dist/app.js",
     "add-feeds": "node seederFeeds.js",
     "lint": "eslint . --ext .ts"
   },
