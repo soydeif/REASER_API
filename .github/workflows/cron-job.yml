@@ -2,8 +2,8 @@ name: Update RSS Feeds
 
 on:
   schedule:
-    - cron: "0 0 * * *"   
-    - cron: "52 13 * * *" 
+    - cron: "0 2 * * *"   
+    - cron: "00 14 * * *" 
   workflow_dispatch:      
 
 jobs:
@@ -12,5 +12,6 @@ jobs:
 
     steps:
       - name: Call API to Update Feeds
-        run: |
-          curl -X GET "https://reaserapi-production.up.railway.app/api/update-feeds"
+        uses: tyrrrz/action-http-request@master
+        with: 
+          url: "https://reaserapi-production.up.railway.app/api/update-feeds"
