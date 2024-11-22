@@ -3,8 +3,7 @@ name: Update RSS Feeds
 on:
   schedule:
     - cron: "0 2 * * *"   
-    - cron: "0 14 * * *"
-    - cron: "*/5 * * * *"
+    - cron: "0 14 * * *"    
   workflow_dispatch:      
 
 jobs:
@@ -12,8 +11,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Log Cron Trigger
-        run: echo "Cron triggered at $(date)"
       - name: Call API to Update Feeds
         uses: tyrrrz/action-http-request@master
         with: 
