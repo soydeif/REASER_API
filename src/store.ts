@@ -44,21 +44,42 @@ class StoreController {
       : [];
 
     const items = itemsArray.map((item: any) => {
+      const fallbackDescription =
+        item.description ||
+        item["media:description"] ||
+        item["description"] ||
+        "";
+      let imageUrl = null;
+      if (item["media:content"]) {
+        if (Array.isArray(item["media:content"])) {
+          imageUrl =
+            item["media:content"].find((media: any) => media.$ && media.$.url)
+              ?.$.url || null;
+        } else if (item["media:content"].$ && item["media:content"].$.url) {
+          imageUrl = item["media:content"].$.url || null;
+        }
+      }
+      console.log("Parsed item:", {
+        title: item.title,
+        imageUrl: imageUrl,
+      });
       return {
         id: item.id || null,
         title: item.title || "No Title",
         description:
           this.extractFigcaptionEmContent(item.description || item.content) ||
-          item.description ||
-          item["media:description"] ||
-          "",
+          fallbackDescription,
         content:
           this.extractFirstParagraphContent(item.description || item.content) ||
-          item["media:description"] ||
-          "",
+          fallbackDescription,
         link: item.link || "",
-        imagesource: this.extractImageSource(item.description || item.content),
-        author: item["media:credit"] || item.author || "Unknown Author",
+        imagesource:
+          imageUrl || this.extractImageSource(item.description || item.content),
+        author:
+          item["media:credit"] ||
+          item["dc:creator"] ||
+          item.author ||
+          "Unknown author",
         publishedat: item.pubDate || "",
         favorite: false,
       };
@@ -70,6 +91,8 @@ class StoreController {
   private parseAtomFeed(result: any): { title: string; items: any[] } {
     const feedtitle = result.feed.title;
     const items = result.feed.entry.map((entry: any) => {
+      const mediaContent = entry["media:content"];
+
       return {
         title: entry.title,
         link: entry.link.$.href,
@@ -80,7 +103,9 @@ class StoreController {
         content:
           this.extractFirstParagraphContent(entry.content || entry.summary) ||
           "",
-        imagesource: this.extractImageSource(entry.content || entry.summary),
+        imagesource:
+          mediaContent?.url ||
+          this.extractImageSource(entry.content || entry.summary),
         author: entry.author ? entry.author.name : "Unknown Author",
         publishedat: entry.published || "",
       };
@@ -326,8 +351,11 @@ class StoreController {
   async getAllItems(): Promise<StoreItem[]> {
     const db = await dbPromise;
 
+    console.log("Fetching all feeds...");
     const result = await db.query("SELECT * FROM feeds");
     const items = result.rows;
+
+    console.log("Feeds fetched:", items);
 
     const storeItems: StoreItem[] = await Promise.all(
       items.map(async (item: StoreItem) => {
@@ -362,6 +390,7 @@ class StoreController {
       })
     );
 
+    console.log("Feeds with content fetched:", storeItems);
     return storeItems;
   }
 
@@ -432,6 +461,62 @@ class StoreController {
     );
 
     return storeItems;
+  }
+
+  async updateAllFeeds(): Promise<void> {
+    const db = await dbPromise;
+
+    try {
+      const feedsResult = await db.query("SELECT * FROM feeds");
+      const feeds = feedsResult.rows;
+
+      for (const feed of feeds) {
+        console.log(`Updating feed: ${feed.feedtitle}`);
+
+        try {
+          const parsedFeed = await this.parseRSS(feed.url);
+
+          const deleteResult = await db.query(
+            "DELETE FROM feed_items WHERE feed_id = $1",
+            [feed.id]
+          );
+          console.log(
+            `Deleted ${deleteResult.rowCount} items for feed: ${feed.feedtitle}`
+          );
+          //UPDATE RSS TITLE DIRECTLY FROM SOURCE
+          // await db.query(`UPDATE feeds SET feedtitle = $1 WHERE id = $2`, [
+          //   parsedFeed.title,
+          //   feed.id,
+          // ]);
+
+          for (const item of parsedFeed.items) {
+            await db.query(
+              `INSERT INTO feed_items 
+               (feed_id, title, link, description, content, imagesource, author, publishedat, favorite) 
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+              [
+                feed.id,
+                item.title || "",
+                item.link || "",
+                item.description || "",
+                item.content || "",
+                item.imagesource || null,
+                item.author || null,
+                item.publishedat || null,
+                item.favorite || false,
+              ]
+            );
+          }
+        } catch (error) {
+          console.error(`Error updating feed ${feed.feedtitle}:`, error);
+        }
+      }
+
+      console.log("All feeds have been updated.");
+    } catch (error) {
+      console.error("Error updating feeds:", error);
+      throw error;
+    }
   }
 }
 

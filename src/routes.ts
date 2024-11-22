@@ -113,4 +113,15 @@ router.get("/myfeeds/favorites", async (req, res) => {
   }
 });
 
+router.get("/update-feeds", async (req, res) => {
+  try {
+    console.log("Updating all feeds...");
+    await storeController.updateAllFeeds();
+    res.status(200).json({ message: "Feeds updated successfully" });
+  } catch (error) {
+    console.error("Error updating feeds:", error);
+    res.status(500).json({ error: "Failed to update feeds" });
+  }
+});
+
 export default router;

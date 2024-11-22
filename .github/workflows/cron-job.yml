@@ -1,0 +1,14 @@
+name: Update RSS Feeds
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+    - cron: "35 13 * * *"
+jobs:
+  update-feeds:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call API to Update Feeds
+        run: |
+          curl -X GET "https://reaserapi-production.up.railway.app/api/update-feeds"
