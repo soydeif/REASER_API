@@ -2,8 +2,10 @@ name: Update RSS Feeds
 
 on:
   schedule:
-    - cron: "0 0 * * *"
-    - cron: "42 13 * * *"
+    - cron: "0 0 * * *"   
+    - cron: "52 13 * * *" 
+  workflow_dispatch:      
+
 jobs:
   update-feeds:
     runs-on: ubuntu-latest
