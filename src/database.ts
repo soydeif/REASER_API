@@ -11,6 +11,9 @@ async function connectDatabase() {
       process.env.DATABASE_PRIVATE_URL || process.env.DATABASE_PUBLIC_URL;
 
     if (!connectionString) {
+      console.error(
+        "DATABASE_PRIVATE_URL o DATABASE_PUBLIC_URL no están definidas."
+      );
       throw new Error(
         "No se encontró una variable de conexión válida. Verifica que DATABASE_PRIVATE_URL o DATABASE_PUBLIC_URL estén definidas."
       );
@@ -116,7 +119,16 @@ export async function clearTestDatabase() {
 }
 
 export async function closeDatabaseConnection() {
-  await client.end();
-  isConnected = false;
-  console.log("Database connection closed.");
+  if (!client) {
+    console.log("No hay conexión de base de datos activa para cerrar.");
+    return;
+  }
+
+  try {
+    await client.end();
+    isConnected = false;
+    console.log("Conexión a la base de datos cerrada.");
+  } catch (error) {
+    console.error("Error al cerrar la conexión a la base de datos:", error);
+  }
 }
