@@ -22,6 +22,12 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Set environment variables
+        env:
+          DATABASE_PRIVATE_URL: ${{ secrets.DATABASE_PRIVATE_URL }}
+          DATABASE_PUBLIC_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+        run: echo "Environment variables set"
+
       - name: Install dependencies
         run: npm install
 

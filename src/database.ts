@@ -11,23 +11,27 @@ async function connectDatabase() {
       process.env.DATABASE_PRIVATE_URL || process.env.DATABASE_PUBLIC_URL;
 
     if (!connectionString) {
+      console.error(
+        "DATABASE_PRIVATE_URL o DATABASE_PUBLIC_URL no están definidas."
+      );
       throw new Error(
         "No se encontró una variable de conexión válida. Verifica que DATABASE_PRIVATE_URL o DATABASE_PUBLIC_URL estén definidas."
       );
     }
-    if (connectionString === process.env.DATABASE_PRIVATE_URL) {
-      console.log(
-        "Conectando a través de DATABASE_PRIVATE_URL (endpoint privado)."
-      );
-    } else if (connectionString === process.env.DATABASE_PUBLIC_URL) {
-      console.log(
-        "Conectando a través de DATABASE_PUBLIC_URL (endpoint público)."
-      );
+
+    try {
+      const url = new URL(connectionString);
+      console.log("Conectando a PostgreSQL en host:", url.hostname);
+    } catch (err) {
+      console.error("Error al parsear el connection string:", err);
     }
 
     client = new Client({
       connectionString,
-      ssl: { rejectUnauthorized: false },
+      ssl:
+        connectionString === process.env.DATABASE_PUBLIC_URL
+          ? { rejectUnauthorized: false }
+          : undefined,
     });
   }
 
@@ -115,7 +119,16 @@ export async function clearTestDatabase() {
 }
 
 export async function closeDatabaseConnection() {
-  await client.end();
-  isConnected = false;
-  console.log("Database connection closed.");
+  if (!client) {
+    console.log("No hay conexión de base de datos activa para cerrar.");
+    return;
+  }
+
+  try {
+    await client.end();
+    isConnected = false;
+    console.log("Conexión a la base de datos cerrada.");
+  } catch (error) {
+    console.error("Error al cerrar la conexión a la base de datos:", error);
+  }
 }
