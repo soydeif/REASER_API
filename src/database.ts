@@ -15,19 +15,20 @@ async function connectDatabase() {
         "No se encontró una variable de conexión válida. Verifica que DATABASE_PRIVATE_URL o DATABASE_PUBLIC_URL estén definidas."
       );
     }
-    if (connectionString === process.env.DATABASE_PRIVATE_URL) {
-      console.log(
-        "Conectando a través de DATABASE_PRIVATE_URL (endpoint privado)."
-      );
-    } else if (connectionString === process.env.DATABASE_PUBLIC_URL) {
-      console.log(
-        "Conectando a través de DATABASE_PUBLIC_URL (endpoint público)."
-      );
+
+    try {
+      const url = new URL(connectionString);
+      console.log("Conectando a PostgreSQL en host:", url.hostname);
+    } catch (err) {
+      console.error("Error al parsear el connection string:", err);
     }
 
     client = new Client({
       connectionString,
-      ssl: { rejectUnauthorized: false },
+      ssl:
+        connectionString === process.env.DATABASE_PUBLIC_URL
+          ? { rejectUnauthorized: false }
+          : undefined,
     });
   }
 
