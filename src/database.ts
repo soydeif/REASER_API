@@ -7,10 +7,26 @@ export let client: Client;
 let isConnected = false;
 async function connectDatabase() {
   if (!client) {
-    console.log("¡no es client");
+    const connectionString =
+      process.env.DATABASE_PRIVATE_URL || process.env.DATABASE_PUBLIC_URL;
+
+    if (!connectionString) {
+      throw new Error(
+        "No se encontró una variable de conexión válida. Verifica que DATABASE_PRIVATE_URL o DATABASE_PUBLIC_URL estén definidas."
+      );
+    }
+    if (connectionString === process.env.DATABASE_PRIVATE_URL) {
+      console.log(
+        "Conectando a través de DATABASE_PRIVATE_URL (endpoint privado)."
+      );
+    } else if (connectionString === process.env.DATABASE_PUBLIC_URL) {
+      console.log(
+        "Conectando a través de DATABASE_PUBLIC_URL (endpoint público)."
+      );
+    }
+
     client = new Client({
-      connectionString:
-        process.env.DATABASE_PRIVATE_URL || process.env.DATABASE_PUBLIC_URL,
+      connectionString,
       ssl: { rejectUnauthorized: false },
     });
   }
